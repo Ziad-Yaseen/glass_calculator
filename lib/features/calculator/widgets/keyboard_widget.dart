@@ -1,136 +1,102 @@
 import 'package:flutter/material.dart';
+import 'package:glass_calculator/features/calculator/logic/calculator_controller.dart';
 
 enum KeyType { number, operations1, operations2, ac, equal }
 
+class _KeyData {
+  const _KeyData({this.label, this.icon, required this.type, this.flex = 1});
+  final String? label;
+  final IconData? icon;
+  final KeyType type;
+  final int flex;
+}
+
+const _backspaceKey = _KeyData(
+  icon: Icons.backspace_outlined,
+  type: KeyType.operations1,
+);
+
+const List<List<_KeyData>> _rows = [
+  [
+    _KeyData(label: 'AC', type: KeyType.ac),
+    _backspaceKey,
+    _KeyData(label: '%', type: KeyType.operations1),
+    _KeyData(label: '÷', type: KeyType.operations2),
+  ],
+  [
+    _KeyData(label: '7', type: KeyType.number),
+    _KeyData(label: '8', type: KeyType.number),
+    _KeyData(label: '9', type: KeyType.number),
+    _KeyData(label: '×', type: KeyType.operations2),
+  ],
+  [
+    _KeyData(label: '4', type: KeyType.number),
+    _KeyData(label: '5', type: KeyType.number),
+    _KeyData(label: '6', type: KeyType.number),
+    _KeyData(label: '−', type: KeyType.operations2),
+  ],
+  [
+    _KeyData(label: '1', type: KeyType.number),
+    _KeyData(label: '2', type: KeyType.number),
+    _KeyData(label: '3', type: KeyType.number),
+    _KeyData(label: '+', type: KeyType.operations2),
+  ],
+  [
+    _KeyData(label: '0', type: KeyType.number, flex: 2),
+    _KeyData(label: '.', type: KeyType.number),
+    _KeyData(label: '=', type: KeyType.equal),
+  ],
+];
+
 class KeyboardWidget extends StatelessWidget {
-  const KeyboardWidget({super.key});
+  const KeyboardWidget({super.key, required this.controller});
+  final CalculatorController controller;
+
+  static const double _gap = 12.0;
+
+  void _onKey(_KeyData k) {
+    if (k.type == KeyType.ac) {
+      controller.clear();
+    } else if (identical(k, _backspaceKey)) {
+      controller.backspace();
+    } else if (k.type == KeyType.equal) {
+      controller.equals();
+    } else {
+      controller.input(k.label!);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    const double gap = 12.0;
-
-    return const Expanded(
-      child: Column(
-        children: [
+    final rows = <Widget>[];
+    for (var r = 0; r < _rows.length; r++) {
+      if (r > 0) rows.add(const SizedBox(height: _gap));
+      final keys = <Widget>[];
+      for (var c = 0; c < _rows[r].length; c++) {
+        final k = _rows[r][c];
+        if (c > 0) keys.add(const SizedBox(width: _gap));
+        keys.add(
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: _KeyboardKey(label: 'AC', type: KeyType.ac),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(
-                    icon: Icons.backspace_outlined,
-                    type: KeyType.operations1,
-                  ),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(label: '%', type: KeyType.operations1),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(label: '÷', type: KeyType.operations2),
-                ),
-              ],
+            flex: k.flex,
+            child: _KeyboardKey(
+              label: k.label,
+              icon: k.icon,
+              type: k.type,
+              onTap: () => _onKey(k),
             ),
           ),
-          SizedBox(height: gap),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: _KeyboardKey(label: '7', type: KeyType.number),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(label: '8', type: KeyType.number),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(label: '9', type: KeyType.number),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(label: '×', type: KeyType.operations2),
-                ),
-              ],
-            ),
+        );
+      }
+      rows.add(
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: keys,
           ),
-          SizedBox(height: gap),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: _KeyboardKey(label: '4', type: KeyType.number),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(label: '5', type: KeyType.number),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(label: '6', type: KeyType.number),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(label: '−', type: KeyType.operations2),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: gap),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: _KeyboardKey(label: '1', type: KeyType.number),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(label: '2', type: KeyType.number),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(label: '3', type: KeyType.number),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _KeyboardKey(label: '+', type: KeyType.operations2),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: gap),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: _KeyboardKey(label: '0', type: KeyType.number),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  flex: 1,
-                  child: _KeyboardKey(label: '.', type: KeyType.number),
-                ),
-                SizedBox(width: gap),
-                Expanded(
-                  flex: 1,
-                  child: _KeyboardKey(label: '=', type: KeyType.equal),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
+    return Expanded(child: Column(children: rows));
   }
 }
 
@@ -138,8 +104,14 @@ class _KeyboardKey extends StatelessWidget {
   final String? label;
   final IconData? icon;
   final KeyType type;
+  final VoidCallback onTap;
 
-  const _KeyboardKey({this.label, this.icon, required this.type});
+  const _KeyboardKey({
+    this.label,
+    this.icon,
+    required this.type,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +153,7 @@ class _KeyboardKey extends StatelessWidget {
     }
 
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
         decoration: BoxDecoration(
